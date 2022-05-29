@@ -1,0 +1,1273 @@
+import java.util.*;
+
+public class TrainingTwo {
+//floodFill
+//sortVersionNumbers
+//monotonousSubstring - number of substrings that are monotonously increasing or decreasing
+//costToMoveInArray - cost to move 1s to each index
+//cuttingWoodToPieces - pieces of wood of different length, whats max length of cuts to get k pieces
+//removeOuterMostParentheses - count outer parentheses and then unbalanced ones
+//longestArithmeticPathInTree - longest path with arithmetic progression
+//numberOfBarsVisibleFromLeft - number of ways to arrange 1-N bars so only k are visible
+//nodeWithMaximumCommonNodes - find node having most common nodes with k
+//numberOfClusters - car clusters based on speed (no overtaking)
+//longestPossibleChunkedPalindrome
+//stringTransformation - hard
+//sumOfDistancesInTree - hard
+//keysAndRooms - check if all nodes connected
+//eventualSafeStates - terminal node - no outgoing, safe node -> all outgoing eventually lead to terminal
+//cheapestFlightsWithKStops
+//bipartiteGraph - every edge in the graph connects a node in set A and a node in set B
+//networkDelay - shortest path to furthest away node
+//redundantConnection - edge breaking tree - union-find
+//numberOfProvinces - dfs numberOfConnectedComponents
+//reconstructItinerary - order of travel based on starting point and list of tickets (edges) - Directed Euler path
+//numberOfConnectedComponents - bfs
+//graphValidTree - undirecded graph - connected & no cycle
+//cloneGraph
+//detectCycle - impossible course schedule
+//bestApartment - best index based on smallest dist to some requirements
+//sumBitDifferences
+
+    public static void main(String[] args) {
+        cuttingWoodToPieces();
+    }
+    //all subarrays:
+    //for (int i = 0; i < n; i++) {
+    //    for (int j = i; j < n; j++) {
+
+    //adjList.computeIfAbsent(edge[0], key -> new ArrayList<>()).add(new int[]{edge[1], edge[2]});
+
+    //PriorityQueue<int[]> queue = new PriorityQueue<>(Comparator.comparingInt(edge -> edge[1]));
+
+    static void floodFill(){
+        //Given a 2D screen arr[][] where each arr[i][j] is an integer representing the color of that pixel,
+        //also given the location of a pixel (X, Y) and a color C, the task is to replace the color of the given pixel and all the adjacent same-colored pixels with the given color.
+        int[][] input = {
+                {1, 1, 1, 1, 1, 1, 1, 1},
+                {1, 1, 1, 1, 1, 1, 0, 0},
+                {1, 0, 0, 1, 1, 0, 1, 1},
+                {1, 2, 2, 2, 2, 0, 1, 0},
+                {1, 1, 1, 2, 2, 0, 1, 0},
+                {1, 1, 1, 2, 2, 2, 2, 0},
+                {1, 1, 1, 1, 1, 2, 1, 1},
+                {1, 1, 1, 1, 1, 2, 2, 1}};
+        int x=4, y=4, c=3;
+        Queue<int[]> queue = new LinkedList<>();
+        for(int[] row: input){
+            System.out.println(Arrays.toString(row));
+        }
+        System.out.println();
+        queue.add(new int[]{x,y});
+        while (!queue.isEmpty()){
+            int[] point = queue.poll();
+            int px = point[0], py = point[1];
+            if(input[px][py]!=c){
+                if(px>0){
+                    if(input[px-1][py]==input[px][py]){
+                        queue.add(new int[]{px-1,py});
+                    }
+                }
+                if(px<input[0].length-1){
+                    if(input[px+1][py]==input[px][py]){
+                        queue.add(new int[]{px+1,py});
+                    }
+                }
+                if(py>0){
+                    if(input[px][py-1]==input[px][py]){
+                        queue.add(new int[]{px,py-1});
+                    }
+                }
+                if(px<input.length-1){
+                    if(input[px][py+1]==input[px][py]){
+                        queue.add(new int[]{px,py+1});
+                    }
+                }
+                input[px][py]=c;
+            }
+        }
+        for(int[] row: input){
+            System.out.println(Arrays.toString(row));
+        }
+
+    }
+
+    static void sortVersionNumbers(){
+        //Given an array of strings arr[], consisting of N strings each representing dot separated numbers in the form of software versions.
+        String[] input = {"1.1.2", "0.9.1", "1.1.0", "1.1.2", "0.9.1", "1.1.0", "1.2", "0.8.1", "1.0","10.2", "0.80.1", "1.10"};
+
+        int[][] arr = new int[input.length][];
+        for (int i=0; i<input.length; i++){
+            arr[i] = splitString(input[i]);
+        }
+        sort(0, arr, 0, arr.length-1);
+
+        for (int i=0; i<input.length; i++){
+            input[i] = mergeIntsToString(arr[i]);
+            System.out.println(mergeIntsToString(arr[i]));
+        }
+
+    }
+
+    static void sort(int position, int[][] input, int lo, int hi){
+        if(lo==hi) return;
+        for(int index=lo; index<hi; index++){
+            int tempIndex = index;
+            while(tempIndex >= lo && tempIndex<hi && input[tempIndex+1][position] < input[tempIndex][position]){
+                int[] temp = input[tempIndex];
+                input[tempIndex]=input[tempIndex+1];
+                input[tempIndex+1]=temp;
+                tempIndex--;
+            }
+        }
+        int currVal=input[lo][position];
+        int newlo=lo;
+        for(int index=lo; index<=hi; index++){
+            if(position>input[index].length){
+                newlo++;
+                continue;
+            }
+            if(input[index][position]!=currVal){
+                if(position<input[index].length-1)
+                    sort(position+1, input, newlo, index-1);
+                newlo=index;
+                currVal=input[index][position];
+            }else if(index==hi){
+                if(position<input[index].length-1)
+                    sort(position+1, input, newlo, index);
+            }
+        }
+    }
+
+    static int[] splitString(String inp){
+        String[] split = inp.split("\\.");
+        int[] values = new int[split.length];
+        for(int i=0; i<split.length; i++){
+            values[i] = Integer.parseInt(split[i]);
+        }
+        return values;
+    }
+
+    static String mergeIntsToString(int[] inp){
+        StringBuilder sb = new StringBuilder();
+        for(int i=0; i<inp.length;i++){
+            sb.append(inp[i]);
+            if(i<inp.length-1)
+                sb.append(".");
+        }
+        return sb.toString();
+    }
+
+    static void monotonousSubstring(){
+        //Given a string str, the task is to find the minimum numbers of substrings that the given string S can be split into,
+        // such that each substring is monotonously increasing or decreasing.
+        String str = "aeccdhbacdfe";
+        int count=1;
+        int increasing=0;
+        for(int i=1; i<str.length();i++){
+            if(str.charAt(i)>str.charAt(i-1)){
+                if(increasing==-1){
+                    increasing=0;
+                    count++;
+                }else if(increasing==0){
+                    increasing=1;
+                }
+            }else if(str.charAt(i)<str.charAt(i-1)){
+                if(increasing==1){
+                    increasing=0;
+                    count++;
+                }else if(increasing==0){
+                    increasing=-1;
+                }
+            }
+        }
+        System.out.println(count);
+    }
+
+    static void costToMoveInArray(){
+        //Given a binary array, in which, moving an element from index i to index j requires abs(i – j) cost.
+        //The task is to find the cost to move all 1s to each index of the given array.
+        //int[] arr ={0, 1, 0, 1};
+        int[] arr ={ 1, 1, 1};
+        HashSet<Integer> onePositions = new HashSet<>();
+        int[] costs = new int[arr.length];
+        for(int i=0; i<arr.length;i++){
+            for (int index: onePositions){
+                costs[i]+=Math.abs(i - index);
+            }
+            if(arr[i]==1){
+                onePositions.add(i);
+                for (int j=0; j<i; j++){
+                    costs[j]+=Math.abs(i - j);
+                }
+            }
+        }
+        System.out.println(Arrays.toString(costs));
+    }
+
+    static void cuttingWoodToPieces(){
+        //Given an array wood[] of size N, representing the length of N pieces of wood and an integer K,
+        //at least K pieces of the same length need to be cut from the given wooden pieces.
+        //The task is to find the maximum possible length of these K wooden pieces that can be obtained.
+        int[] wood = {5, 9, 7};
+        int k=2;
+
+        int right = wood[wood.length-1];
+        int left=1;
+        System.out.println(cutWood(left, right, wood, k));
+    }
+
+    static int cutWood(int left, int right, int[] wood, int k){
+        if(left>right) return right;
+        int mid = (left+right)/2;
+        if(canCutToK(wood, k, mid)){
+            return cutWood(mid+1, right, wood, k);
+        }else{
+            return cutWood(left, mid-1, wood, k);
+        }
+    }
+
+    static boolean canCutToK(int[] wood, int k, int length){
+        int count=0;
+        for(int i=0; i<wood.length;i++){
+            count+=wood[i]/length;
+        }
+        return count>=k;
+    }
+
+    static void removeOuterMostParentheses(){
+        String input = "(((a)(bcd)(e)))";
+        int start=0, end =input.length()-1;
+        while (start<=end){
+            if(input.charAt(start)=='('&&input.charAt(end)==')'){
+                start++;
+                end--;
+            }
+            else break;
+        }
+        int unbalanced=0, outer=0;
+        for(int i=start;i<end;i++){
+            if(input.charAt(i)=='('){
+                unbalanced++;
+            }else if(input.charAt(i)==')'){
+                unbalanced--;
+            }
+            outer=Math.min(unbalanced, outer);
+        }
+        start+=outer;
+        end-=outer;
+        //  a)(bcd)(e
+        System.out.println(input.substring(start, end+1));
+    }
+
+    static int longestPath=0;
+    static void longestArithmeticPathInTree(){
+        //Given a Binary Tree consisting of N nodes, the task is to find the length of the longest path from any node
+        //to the bottom of the tree such that all the node values form an
+        //Arithmetic Progression - A sequence of numbers is called an Arithmetic progression if the difference between any two consecutive terms is always the same.
+
+        IntNode test = new IntNode(null, 22, null);
+        test = new IntNode(null, 19, test);
+        test = new IntNode(test, 16, null);
+        test = new IntNode(null, 13, test);
+        test = new IntNode(null, 10, test);
+
+        IntNode root = new IntNode(null, 15, null);
+        root = new IntNode(null, 12, root);
+        root = new IntNode(new IntNode(null, 7, test), 9, root);
+        root = new IntNode(null, 6, root);
+
+        traverseTree(root,0, 0);
+
+        System.out.println(longestPath);
+    }
+
+    static void traverseTree(IntNode root,int lambda, int currentLength){
+        if(root!=null) {
+            currentLength++;
+            if(currentLength>longestPath) longestPath=currentLength;
+            if(root.left!=null){
+                if(root.left.item-root.item==lambda){
+                    traverseTree(root.left, lambda, currentLength);
+                }else {
+                    traverseTree(root.left,root.left.item-root.item, 1);
+                }
+            }
+            if(root.right!=null){
+                if(root.right.item-root.item==lambda){
+                    traverseTree(root.right, lambda, currentLength);
+                }else {
+                    traverseTree(root.right,root.right.item-root.item, 1);
+                }
+            }
+        }
+    }
+
+    private static class IntNode {
+        Integer item;
+        IntNode right;
+        IntNode left;
+
+        IntNode(Integer element) {
+            this.item = element;
+        }
+
+        IntNode(IntNode left, Integer element, IntNode right) {
+            this.item = element;
+            this.left = left;
+            this.right = right;
+        }
+    }
+
+    static class BarsFromLeft{
+        static int count;
+        static void numberOfBarsVisibleFromLeft(){
+            //Given a number K, and N bars of height from 1 to N, the task is to find the number of ways to arrange the N bars such that only K bars are visible from the left.
+            int n=5, k=2;
+            TreeSet<Integer> order = new TreeSet<>();
+            int barsToHide=n-k;
+
+            for (int i=1; i<=n;i++){
+                order.add(i);
+                checkVisibility(order, barsToHide, n, i);
+            }
+            System.out.println(count);
+        }
+
+        static void checkVisibility(TreeSet<Integer> order, int barsToHide, int n, int added){
+            if(order.size()==n){
+                if(barsToHide==0) count++;
+                order.remove(added);
+                return;
+            }
+            for (int i=1; i<=n;i++){
+                if(!order.contains(i)){
+                    if(i<order.last()){
+                        if(barsToHide>0){
+                            order.add(i);
+                            checkVisibility(order, barsToHide-1, n, i);
+                        }
+                    }else{
+                        order.add(i);
+                        checkVisibility(order, barsToHide, n, i);
+                    }
+                }
+            }
+            order.remove(added);
+        }
+
+        // Function to calculate the number of
+        // permutations of N, where only K bars
+        // are visible from the left.
+        static int KvisibleFromLeft(int N, int K)
+        {
+
+            // Only ascending order is possible
+            if (N == K)
+                return 1;
+
+            // N is placed at the first position
+            // The nest N-1 are arranged in (N-1)! ways
+            if (K == 1)
+            {
+                int ans = 1;
+                for(int i = 1; i < N; i++)
+                    ans *= i;
+
+                return ans;
+            }
+
+            // Recursing
+            return KvisibleFromLeft(N - 1, K - 1) +
+                    (N - 1) * KvisibleFromLeft(N - 1, K);
+        }
+    }
+
+
+    static void nodeWithMaximumCommonNodes(){
+        //Given a graph consisting of N nodes and an array edges[][] denoting an edge from edges[i][0] with edges[i][1].
+        //Given a node K, the task is to find the node which has the maximum number of common nodes with K.
+        int k=1, n=4;
+        int[][] edges = {{1, 2}, {1, 3}, {2, 3}, {3, 4}, {2, 4}};
+
+        int bestMatchedNode=k, bestScore=0;
+        int[] nodeScores = new int[n];
+        for(int i=0; i<n;i++){
+            nodeScores[i]=0;
+        }
+        ArrayList<Integer> connectedNodes = new ArrayList<>();
+
+        for(int[] edge:edges){
+            if(edge[0]==k){
+                connectedNodes.add(edge[1]);
+            }else if(edge[1]==k){
+                connectedNodes.add(edge[0]);
+            }
+        }
+
+        for(int[] edge:edges){
+            if(edge[0]!=k&&edge[1]!=k){
+                if(connectedNodes.contains(edge[0])){
+                    nodeScores[edge[1]-1]++;
+                    if(nodeScores[edge[1]-1]>bestScore){
+                        bestScore=nodeScores[edge[1]-1];
+                        bestMatchedNode=edge[1];
+                    }
+                }
+                if(connectedNodes.contains(edge[1])){
+                    nodeScores[edge[0]-1]++;
+                    if(nodeScores[edge[0]-1]>bestScore){
+                        bestScore=nodeScores[edge[0]-1];
+                        bestMatchedNode=edge[0];
+                    }
+                }
+            }
+        }
+        System.out.println(bestMatchedNode);
+    }
+
+    static void numberOfClusters(){
+        //Given an array speed[] of size N denoting the speed of N cars moving on an infinitely long single lane road
+        //(i.e. no overtaking is allowed) from left to right. Initially, the rightmost car is at the first position and whenever
+        //a car with higher speed reaches a car with lower speed they start moving with the speed to the slower car and form a cluster.
+        //The task is to find the total number of clusters that will form.
+        //int[] speed = {1, 4, 5, 2, 17, 4 };
+        //int[] speed = {1, 2, 3, 4, 5, 6 };
+        int[] speed = {1, 2, 3, 4, 5, 6, 1 };
+        int clusterCount=0;
+        int currLeader = Integer.MAX_VALUE;
+        for (int i = speed.length-1; i>=0; i--){
+            if(speed[i]<=currLeader){
+                clusterCount++;
+                currLeader=speed[i];
+            }
+        }
+        System.out.println(clusterCount);
+    }
+    static void longestPossibleChunkedPalindrome(){
+        //Given a string, the task is to return the length of its longest possible chunked palindrome.
+        //It means a palindrome formed by substring in the case when it is not formed by characters of the string
+        //String input = "ghiabcdefhelloadamhelloabcdefghi";
+        //String input ="antaprezatepzapreanta";
+        String input ="aabbccbbaa";
+        int count = 1;
+        char[] characters = input.toCharArray();
+        int start=0, end=characters.length-1;
+        StringBuilder prefix = new StringBuilder(), suffix = new StringBuilder();
+        while(start<end){
+            prefix.append(characters[start]);
+            suffix.insert(0, characters[end]);
+            if(prefix.toString().equals(suffix.toString())){
+                count+=2;
+                prefix = new StringBuilder();
+                suffix = new StringBuilder();
+            }
+            start++;
+            end--;
+        }
+        System.out.println(count);
+    }
+
+    static void stringTransformationMy(){
+        //is wrong but can be possibly fixed by finding way to get number of possible deletes with x starting chars and y ending chars
+        String a = "abcccddf", b = "abccdf";
+        ArrayList<Integer> possibleDeletes = new ArrayList<>();
+        int aIndex=0;
+        for(int i=0; i<a.length();i++){
+            if(a.charAt(i)==b.charAt(0)){
+                tempStringTransform(a, b, aIndex, 0, possibleDeletes);
+            }
+        }
+        int answer=1;
+        for (int possibility: possibleDeletes){
+            answer*=possibility;
+        }
+        System.out.println(answer);
+    }
+    static void tempStringTransform(String a, String b, int aIndex, int bIndex, ArrayList<Integer> possibleDeletes){
+        int temp=0;
+        aIndex++;
+        while (a.charAt(aIndex)==b.charAt(bIndex)){
+            temp++;
+            aIndex++;
+        }
+        if(temp!=0)
+            possibleDeletes.add(temp);
+        bIndex++;
+        for(int i=aIndex; i<a.length();i++){
+            if(a.charAt(i)==b.charAt(bIndex)){
+                tempStringTransform(a, b, aIndex, bIndex, possibleDeletes);
+            }
+        }
+    }
+
+
+    static void stringTransformation(){
+        //Given two sequences A, B, find out number of unique ways in sequence A,
+        // to form a subsequence of A that is identical to sequence B. Transformation is meant by converting string A (by removing 0 or more characters) to string B.
+        String a = "abcccddf", b = "abccdf";
+        if(b.length()>a.length()){
+            System.out.println("B longer than A");
+            return;
+        }
+        if(b.length()==a.length()){
+            if (b.equals(a)){
+                System.out.println(1);
+                return;
+            }else {
+                System.out.println(0);
+                return;
+            }
+        }
+        int n = a.length(), m = b.length();
+        int dp[][] = new int[m][n];
+
+        // Fill dp[][] in bottom up manner
+        // Traverse all character of b[]
+        for (int i = 0; i < m; i++) {
+
+            // Traverse all characters of a[] for b[i]
+            for (int j = i; j < n; j++) {
+
+                // Filling the first row of the dp
+                // matrix.
+                if (i == 0) {
+                    if (j == 0) {
+                        dp[i][j] = (a.charAt(j) == b.charAt(i)) ? 1 : 0;
+                    }
+                    else if (a.charAt(j) == b.charAt(i)) {
+                        dp[i][j] = dp[i][j - 1] + 1;
+                    }
+                    else {
+                        dp[i][j] = dp[i][j - 1];
+                    }
+                }
+
+                // Filling other rows.
+                else if (a.charAt(j) == b.charAt(i)) {
+                    dp[i][j] = dp[i][j - 1]
+                            + dp[i - 1][j - 1];
+                }
+                else {
+                    dp[i][j] = dp[i][j - 1];
+                }
+            }
+        }
+        System.out.println(dp[m - 1][n - 1]);
+    }
+
+    static void sumOfDistancesInTree(){
+        //There is an undirected connected tree with n nodes labeled from 0 to n - 1 and n - 1 edges.
+        //
+        //You are given the integer n and the array edges where edges[i] = [ai, bi] indicates that there is an edge between nodes ai and bi in the tree.
+        //
+        //Return an array answer of length n where answer[i] is the sum of the distances between the ith node in the tree and all other nodes.
+        //
+        //
+        int n =6;
+        int[][] edges = {{0,1},{0,2},{2,3},{2,4},{2,5}};
+        int[] answer = new int[n];
+
+        for (int i=0; i<n;i++){
+            boolean[] visited = new boolean[n];
+            sumInTreeDFS(i, i, edges, answer, visited, 0);
+        }
+        System.out.println(Arrays.toString(answer));
+    }
+
+    static void sumInTreeDFS(int vector, int target, int[][] edges, int[] answer, boolean[] visited, int distance){
+        visited[target]=true;
+        distance++;
+        for(int[] edge: edges){
+            if(edge[0]==target&&!visited[edge[1]]){
+                answer[vector]+=distance;
+                sumInTreeDFS(vector, edge[1],edges, answer, visited, distance);
+            } else if(edge[1]==target&&!visited[edge[0]]){
+                answer[vector]+=distance;
+                sumInTreeDFS(vector, edge[0],edges, answer, visited, distance);
+            }
+        }
+
+    }
+
+    static void keysAndRooms(){
+        //There are n rooms labeled from 0 to n - 1 and all the rooms are locked except for room 0. Your goal is to visit all the rooms. However, you cannot enter a locked room without having its key.
+        //
+        //When you visit a room, you may find a set of distinct keys in it. Each key has a number on it, denoting which room it unlocks, and you can take all of them with you to unlock the other rooms.
+        //
+        //Given an array rooms where rooms[i] is the set of keys that you can obtain if you visited room i, return true if you can visit all the rooms, or false otherwise.
+        int[][] input = {{1}, {2}, {3}, {}};
+        boolean[] visited = new boolean[input.length];
+        HashMap<Integer, List<Integer>> adj = new HashMap<>();
+        for (int i=0; i<input.length; i++){
+            var list =adj.computeIfAbsent(i, k -> new ArrayList<Integer>());
+            for (int room: input[i]){
+                list.add(room);
+            }
+        }
+        LinkedList<Integer> queue = new LinkedList<>();
+        queue.add(0);
+        while (!queue.isEmpty()){
+            int room = queue.poll();
+            visited[room]=true;
+            for (int key: adj.get(room)){
+                if(!visited[key]){
+                    queue.add(key);
+                }
+            }
+        }
+        for (int i=0; i<visited.length; i++){
+            if(!visited[i]){
+                System.out.println("not possible to visit every room");
+                return;
+            }
+        }
+        System.out.println("visited every room");
+    }
+
+    static void eventualSafeStates(){
+        //There is a directed graph of n nodes with each node labeled from 0 to n - 1.
+        // The graph is represented by a 0-indexed 2D integer array graph where graph[i] is an integer array of nodes adjacent to node i,
+        // meaning there is an edge from node i to each node in graph[i].
+        //
+        //A node is a terminal node if there are no outgoing edges. A node is a safe node if every possible path starting from that node leads to a terminal node.
+        //
+        //Return an array containing all the safe nodes of the graph. The answer should be sorted in ascending order.
+
+        int[][] graph = {{1,2},{2,3},{5},{0},{5},{},{}};
+
+        HashSet<Integer> terminalNodes = new HashSet<>();
+        TreeSet<Integer> safeStates = new TreeSet<>();
+        HashSet<Integer> unsafe = new HashSet<>();
+        for (int i =0; i<graph.length; i++){
+            if(graph[i].length==0){
+                terminalNodes.add(i);
+                safeStates.add(i);
+            }
+        }
+        HashSet<Integer> route = new HashSet<>();
+        for (int i =0; i<graph.length; i++){
+            if(graph[i].length!=0){
+                if(!unsafe.contains(i) &&!safeStates.contains(i) && safeStatesDFS(i, route, graph, terminalNodes, safeStates, unsafe)){
+                    safeStates.add(i);
+                }
+            }
+        }
+        System.out.println(Arrays.toString(safeStates.toArray()));
+    }
+
+    static boolean safeStatesDFS(int vertex, HashSet<Integer> route, int[][] graph,HashSet<Integer> terminalNodes, TreeSet<Integer> safeStates, HashSet<Integer> unsafe){
+        boolean isSafe = true;
+        if(terminalNodes.contains(vertex)){
+            return isSafe;
+        }
+        route.add(vertex);
+        for(int w: graph[vertex]){
+            if(safeStates.contains(w)){
+                continue;
+            }
+            if(unsafe.contains(w)){
+                isSafe=false;
+                break;
+            }
+            if(!route.contains(w)){
+                isSafe &= safeStatesDFS(w, route, graph, terminalNodes, safeStates, unsafe);
+            }else {
+                isSafe=false;
+                break;
+            }
+        }
+        route.remove(vertex);
+        if(isSafe){
+            safeStates.add(vertex);
+        }else {
+            unsafe.add(vertex);
+        }
+        return isSafe;
+    }
+
+    static void cheapestFlightsWithKStops(){
+        //There are n cities connected by m flights. Each fight starts from city u and arrives at v with a price w.
+        //Now given all the cities and flights, together with starting city src and the destination dst,
+        // your task is to find the cheapest price from src to dst with up to k stops. If there is no such route, output-1.
+        int src = 0, dst = 4, k = 2, n=3;
+        int[][] edges = {{0,1,100},{1,2,100},{0,2,500}, {2, 3, 100}, {3, 4, 100}};
+
+        HashMap<Integer, List<int[]>> adjList = new HashMap<>();
+        for(int[] edge: edges){
+            adjList.computeIfAbsent(edge[0], key -> new ArrayList<>()).add(new int[]{edge[1], edge[2]});
+            adjList.computeIfAbsent(edge[1], key -> new ArrayList<>()).add(new int[]{edge[0], edge[2]});
+        }
+        //PriorityQueue<int[]> queue = new PriorityQueue<>(Comparator.comparingInt(edge -> edge[1]));
+        Stack<Integer> route = new Stack<>();
+        Stack<Integer> cost = new Stack<>();
+        PriorityQueue<Integer> queue = new PriorityQueue<>();
+        flightsDFS(src, dst, k, route, cost, queue, adjList);
+        if(queue.isEmpty()){
+            System.out.println("-1");
+        }else{
+            System.out.println(queue.poll());
+        }
+    }
+
+    static void flightsDFS(int src, int dst, int k, Stack<Integer> route, Stack<Integer> cost, PriorityQueue<Integer> queue, HashMap<Integer, List<int[]>> adjList){
+        if(src==dst){
+            queue.add(cost.stream().mapToInt(Integer::intValue).sum());
+            cost.pop();
+            route.pop();
+            return;
+        }
+        if (route.size()>k){ //up to k stops
+            cost.pop();
+            route.pop();
+            return;
+        }
+        for(int[] flight: adjList.get(src)){
+            if(!route.contains(flight[0])){
+                cost.push(flight[1]);
+                route.push(src);
+                flightsDFS(flight[0], dst, k, route, cost, queue, adjList);
+            }
+        }
+        if(!route.isEmpty()){
+            route.pop();
+            cost.pop();
+        }
+    }
+
+    static void bipartiteGraph(){
+        //A graph is bipartite if the nodes can be partitioned into two independent sets A and B such that every edge in the graph connects a node in set A and a node in set B.
+        //
+        //Return true if and only if it is bipartite.
+
+        //int[][] input = {{1,2,3},{0,2},{0,1,3},{0,2}};
+        int [][] input= {{1,3},{0,2},{1,3},{0,2}};
+
+        int[] nodeType = new int[input.length];
+        Queue<Integer> queue = new LinkedList<>();
+        for (int i =0; i<input.length;i++){
+            if(nodeType[i]==0){                         //zero if not visited
+                queue.add(i);
+                nodeType[i]=1;
+                while (!queue.isEmpty()){
+                    int vertex = queue.poll();
+                    for (int w: input[vertex]){
+                        if(nodeType[w]==nodeType[vertex]){
+                            System.out.println("Non bipartite");
+                            return;
+                        } else if(nodeType[w]==0){
+                            nodeType[w]=-nodeType[vertex];      //1 and -1 for A and B
+                            queue.add(w);
+                        }
+                    }
+                }
+            }
+        }
+
+        System.out.println("Is bipartite");
+    }
+
+    static void networkDelay(){
+        //You are given a network of n nodes, labeled from 1 to n. You are also given times, a list of travel times as directed edges times[i] = (ui, vi, wi),
+        // where ui is the source node, vi is the target node, and wi is the time it takes for a signal to travel from source to target.
+        //
+        //We will send a signal from a given node k. Return the time it takes for all the n nodes to receive the signal.
+        // If it is impossible for all the n nodes to receive the signal, return -1.
+        int[][] input={{2,1,1}, {2,3,1}, {3,4,2}, {1, 4, 1}};
+        int nodes = 4, start=2;
+        if (input.length<nodes-1) {
+            System.out.println("not connected network");
+            return;
+        }
+        Map<Integer, List<int[]>> adjList = new HashMap<>();
+        for (int[] edge : input) {
+            adjList.computeIfAbsent(edge[0], k -> new ArrayList<>()).add(new int[]{edge[1], edge[2]});
+        }
+
+        int[] distTo= new int[nodes+1];
+        for (int i =1; i<nodes+1; i++){
+            distTo[i]= Integer.MAX_VALUE;
+        }
+        distTo[start]=0;
+        PriorityQueue<int[]> edgeToProcess = new PriorityQueue<>(Comparator.comparingInt(edge -> edge[1]));
+
+        edgeToProcess.add(new int[]{start, 0});
+        while (!edgeToProcess.isEmpty()){
+            int[] edge = edgeToProcess.poll();
+            if (adjList.containsKey(edge[0])) {
+                for(int[] target: adjList.get(edge[0])){
+                    if (distTo[target[0]]+target[1]<distTo[target[0]]) distTo[target[0]]=target[1]+distTo[edge[0]];
+                    if (distTo[target[0]]>distTo[0]) distTo[0]=distTo[target[0]];
+                    if (!edgeToProcess.contains(target[0])) edgeToProcess.add(target);
+                }
+            }
+        }
+
+        for (int i =1; i<nodes+1; i++){
+            if (distTo[i]== Integer.MAX_VALUE) {
+                System.out.println(-1);
+                return;
+            }
+        }
+        System.out.println(distTo[0]);
+    }
+
+    static void redundantConnection(){
+        //In this problem, a tree is an undirected graph that is connected and has no cycles.
+        //You are given a graph that started as a tree with n nodes labeled from 1 to n, with one additional edge added.
+        //The added edge has two different vertices chosen from 1 to n, and was not an edge that already existed.
+        //The graph is represented as an array edges of length n where edges[i] = [ai, bi] indicates that there is an edge between nodes ai and bi in the graph.
+        //Return an edge that can be removed so that the resulting graph is a tree of n nodes.
+        // If there are multiple answers, return the answer that occurs last in the input.
+
+        int n = 5;
+        int[][] edges = {{1, 2}, {2, 3}, {4, 3}, {1, 4}, {1, 5}};
+        int[] connected = new int[n+1];
+        for (int i=0; i<connected.length; i++){
+            connected[i]=i;
+        }
+        for (int i=0; i<n; i++){
+            if(connected[edges[i][0]]==connected[edges[i][1]]){
+                System.out.println("Redundant Edge: " + edges[i][0] + "-" + edges[i][1]);
+            }else{
+                unionFindMerge(edges[i][0], edges[i][1], connected);
+            }
+        }
+    }
+
+    static void unionFindMerge(int x, int y, int[] connected){
+        connected[findAncestor(y, connected)]=findAncestor(x, connected);
+
+    }
+
+    static int findAncestor(int node, int[] connected){
+        if(connected[node]==node) return node;
+        else {
+            connected[node]=findAncestor(connected[node], connected);
+            return connected[node];
+        }
+    }
+
+    static void numberOfProvinces(){
+        //There are n cities. Some of them are connected, while some are not. If city a is connected directly with city b,
+        // and city b is connected directly with city c, then city a is connected indirectly with city c.
+        //
+        //A province is a group of directly or indirectly connected cities and no other cities outside of the group.
+        //
+        //You are given an n x n matrix isConnected where isConnected[i][j] = 1 if the ith city and the jth city are directly connected,
+        // and isConnected[i][j] = 0 otherwise.
+        //
+        //Return the total number of provinces.
+
+        //int[][] input = {{1, 1, 0}, {1, 1, 0}, {0,0,1}};
+        int[][] input = {{1, 0, 0}, {0, 1, 0}, {0,0,1}};
+
+        int[] grouping = new int[input.length];
+        boolean[] visited = new boolean[input.length];
+        int count=0;
+
+        for(int i=0; i<input.length;i++){
+            if(!visited[i]){
+                dfsConnectedComponents(i, input, grouping, visited, count);
+                count++;
+            }
+        }
+        for(int i=0; i<input.length;i++){
+            System.out.println(grouping[i]);
+        }
+        System.out.println(count);
+    }
+
+    static void dfsConnectedComponents(int vertex, int[][] input, int[] grouping, boolean[] visited, int count){
+        visited[vertex]=true;
+        grouping[vertex]=count;
+        for(int i=0; i<input[vertex].length; i++){
+            if(input[vertex][i]==1 && !visited[i]){
+                dfsConnectedComponents(i, input, grouping, visited, count);
+            }
+        }
+    }
+
+    static void reconstructItinerary(){
+        //Reconstruct Itinerary - plan podróży - Directed Euler path.
+        //Given a list of airline tickets represented by pairs of departure and arrival airports [from, to],
+        //reconstruct the itinerary in order. All of the tickets belong to a man who departs from JFK. Thus, the itinerary must begin with JFK.
+        //    If there are multiple valid itineraries, you should return the itinerary that has the smallest lexical
+        //    order when read as a single string. For example, the itinerary ["JFK", "LGA"] has a smaller lexical order than ["JFK", "LGB"].
+        //    All airports are represented by three capital letters (IATA code).
+        //    You may assume all tickets form at least one valid itinerary. -- very important for the solution
+        //    One must use all the tickets once and only once.
+
+        //[["JFK","SFO"],["JFK","ATL"],["SFO","ATL"],["ATL","JFK"],["ATL","SFO"]]
+        //String[][] input = {{"JFK","SFO"}, {"JFK","ATL"}, {"SFO","ATL"}, {"ATL","JFK"}, {"ATL","SFO"}, {"ATL","XXX"} };
+        String[][] input = {{"AAA","BBB"}, {"AAA","DDD"}, {"DDD","CCC"}, {"CCC","AAA"}};
+        Map<String, PriorityQueue<String>> routes = new HashMap<>();
+        LinkedList<String> order = new LinkedList<>();
+        for (String[] startPoint:input){
+            routes.computeIfAbsent(startPoint[0], dest ->new PriorityQueue<>()).add(startPoint[1]);
+        }
+
+        visit("AAA", routes, order);
+
+        if (order.size()!=input.length+1){
+            System.out.println("No correct path");
+            return;
+        }
+        order.forEach(city -> System.out.println(city));
+    }
+
+    static void visit(String start, Map<String, PriorityQueue<String>> routes, LinkedList<String> order){
+        while (routes.containsKey(start)&&!routes.get(start).isEmpty()){
+            visit(routes.get(start).poll(), routes, order);
+        }
+        order.add(0, start);
+    }
+
+    static void ReconstructItineraryMy(){
+        HashMap<CityEdge, Integer> edgeMap = new HashMap<>();
+        edgeMap.put(new CityEdge("JFK","SFO"), 0);
+        edgeMap.put(new CityEdge("JFK","ATL"), 1);
+        edgeMap.put(new CityEdge("SFO","ATL"), 2);
+        edgeMap.put(new CityEdge("ATL","JFK"), 3);
+        edgeMap.put(new CityEdge("ATL","SFO"), 4);
+        Stack<String> order;
+        int[] routeCount = {1, 1, 1, 1, 1};
+        for (var edge: edgeMap.entrySet()){
+            if(edge.getKey().from=="JFK"&&routeCount[edge.getValue()]>0){
+                checkRoute(edge.getKey(), routeCount, new Stack<>(), edgeMap);
+            }
+        }
+    }
+
+    static void checkRoute(CityEdge start, int[] routeCount, Stack<String> order, HashMap<CityEdge, Integer> edgeMap){
+        routeCount[edgeMap.get(start)]--;
+        order.push(start.from);
+        for (var edge: edgeMap.entrySet()){
+            if(edge.getKey().from==start.to&&routeCount[edge.getValue()]>0){
+                checkRoute(edge.getKey(), routeCount, order, edgeMap);
+            }
+        }
+    }
+
+    static class CityEdge{
+        String from, to;
+
+        CityEdge(String from, String to){
+            this.from=from;
+            this.to=to;
+        }
+    }
+
+    static void numberOfConnectedComponents(){
+        Graph graph = new Graph(5);
+        graph.addEdge(0,1);
+        graph.addEdge(1, 2);
+        graph.addEdge(3, 4);
+        boolean[] visited = new boolean[graph.edges.length];
+        int count=0;
+        for(int w = 0; w<graph.edges.length; w++){
+            if(!visited[w]){
+                bfs(graph, w, visited);
+                count++;
+            }
+        }
+        System.out.println(count);
+    }
+
+    static void bfs(Graph graph, int vertex, boolean[] visited){
+        LinkedList<Integer> queue = new LinkedList<>();
+        visited[vertex]=true;
+        queue.add(vertex);
+        while (!queue.isEmpty()){
+            int w = queue.poll();
+            visited[w]=true;
+            for (int v: graph.edges[w]){
+                if(!visited[v]) queue.add(v);
+            }
+        }
+    }
+
+    static void graphValidTree(){
+        //Given n nodes labeled from 0 to n-1 and a list of undirected edges (each edge is a pair of nodes),
+        //write a function to check whether these edges make up a valid tree.
+        Graph graph = new Graph(7);
+        graph.addEdge(0, 1);
+        graph.addEdge(0,2);
+        graph.addEdge(0, 3);
+        graph.addEdge(1, 4);
+        //graph.addEdge(2, 3);
+        graph.addEdge(2, 5);
+        graph.addEdge(6, 5);
+
+        //A tree is a special undirected graph. It satisfies two properties
+        //
+        // 1.    It is connected
+        // 2.    It has no cycle.
+
+        var gt = new GraphTree(graph);
+        System.out.println(gt.isValidTree(0, -1) && gt.visited.size()==graph.edges.length);
+    }
+
+    static class GraphTree{
+        Set<Integer> visited = new HashSet<>();//need to count the number of visited nodes to make sure graph is connected
+        Graph graph;
+        GraphTree(Graph graph){
+            this.graph = graph;
+        }
+
+        boolean isValidTree(int node, int parent){
+            visited.add(node);
+            for(int w: graph.edges[node]){
+                if(!visited.contains(w)){
+                    if(!isValidTree(w, node)) return false;
+                }
+                else if (w==parent) continue;
+                else return false;
+            }
+
+            return true;
+        }
+    }
+
+    static void cloneGraph(){
+        Graph graph = new Graph(3);
+        graph.addEdge(1, 0);
+        graph.addEdge(1,2);
+        graph.addEdge(0, 2);
+        graph.addEdge(2, 2);
+
+        Graph copy = new Graph(graph.edges.length);
+        for (int i=0; i<copy.edges.length;i++){
+            for(int v: graph.edges[i]){
+                copy.edges[i].add(v);
+            }
+        }
+        System.out.println(copy.edges[0]==graph.edges[0]);
+    }
+
+    static void detectCycle(){
+        Graph graph= new Graph(7);
+        //graph.addDirectedEdge(1, 1);
+        graph.addDirectedEdge(1, 2);
+        graph.addDirectedEdge(2,3);
+        graph.addDirectedEdge(4, 1);
+        graph.addDirectedEdge(5, 4);
+        graph.addDirectedEdge(4, 6);
+        graph.addDirectedEdge(6, 5);
+
+        new CourseSchedule(graph).courseSchedule();
+    }
+
+    static class CourseSchedule{
+        //Detect cycle
+        //undirected - https://algs4.cs.princeton.edu/41graph/Cycle.java.html
+        Graph graph;
+        int[] edgeTo;
+        boolean[] visited;
+        boolean[] onStack;
+        Stack<Integer> cycle;
+        CourseSchedule(Graph graph){
+            graph = graph;
+
+            edgeTo=new int[graph.edges.length];
+            visited = new boolean[graph.edges.length];
+            onStack = new boolean[graph.edges.length];
+        }
+
+        void courseSchedule(){
+            // There are a total of n courses you have to take, labeled from 0 to n - 1.
+            //Some courses may have prerequisites, for example to take course 0 you have to first take course 1, which is expressed as a pair: [0,1]
+            //Given the total number of courses and a list of prerequisite pairs, is it possible for you to finish all courses?
+
+            for (int i =0; i<graph.edges.length;i++){
+                if(!visited[i] && cycle==null){
+                    dfs(graph, i);
+                }
+            }
+            if(cycle!=null){
+                for (int v : cycle) {
+                    System.out.println(v + " ");
+                }
+            }
+        }
+
+        void dfs(Graph graph, int vertex){
+            onStack[vertex]=true;
+            visited[vertex]=true;
+            for(int w: graph.edges[vertex]){
+                if(cycle!=null)return;
+                if(!visited[w]){
+                    edgeTo[w]=vertex;
+                    dfs(graph, w);
+                }
+                // trace back directed cycle
+                else if (onStack[w]) {
+                    //found cycle can return
+                    cycle = new Stack<Integer>();
+                    for (int x = vertex; x != w; x = edgeTo[x]) {
+                        cycle.push(x);
+                    }
+                    cycle.push(w);
+                    cycle.push(vertex);
+                }
+            }
+            onStack[vertex] = false;
+        }
+    }
+
+
+
+    static void starGraphCenter(){
+        //Find center of star graph
+        int[][] input = {{1,2},{5,1},{1,3},{1,4}};
+
+        //if valid star graph - A star graph is a graph where there is one center node and exactly n - 1 edges that connect the center node with every other node.
+        if(input[0][0]== input[1][0]||input[0][0]==input[1][1]) System.out.println("Answer:" + input[0][0]);
+        else System.out.println("Answer:" + input[1][0]);
+    }
+
+    static void bestApartment() {
+        //https://youtu.be/rw4s4M3hFfs
+
+        ArrayList<ArrayList<Boolean>> apartmentList = new ArrayList<>();
+        apartmentList.add(new ArrayList<>(List.of(false, true, false)));
+        apartmentList.add(new ArrayList<>(List.of(true, false, false)));
+        apartmentList.add(new ArrayList<>(List.of(true, true, false)));
+        apartmentList.add(new ArrayList<>(List.of(false, true, false)));
+        apartmentList.add(new ArrayList<>(List.of(true, true, true)));
+        apartmentList.add(new ArrayList<>(List.of(false, true, true)));
+
+        ArrayList<Integer> reqs = new ArrayList<>(List.of(0, 1, 2));
+
+
+        int size = apartmentList.size();
+        int[] distTo = new int[size];
+
+        for (int j=0; j< reqs.size(); j++){
+            int[] distToTemp = new int[size];
+            for (int i = 0; i < size; i++) {
+                distToTemp[i] = Integer.MAX_VALUE;
+            }
+
+            computeDistTo(distToTemp, apartmentList, j);
+            for (int i = 0; i < size; i++) {
+                distTo[i] += distToTemp[i];
+            }
+        }
+
+        int index = 0;
+        int bestCumulativeDistance=Integer.MAX_VALUE;
+
+        for (int i=0; i<size; i++){
+            if (distTo[i]==0){
+                index=i;
+                break;
+            }
+            if(distTo[i]<bestCumulativeDistance){
+                index=i;
+                bestCumulativeDistance=distTo[i];
+            }
+        }
+
+        System.out.println("Answer: " + index);
+    }
+
+    static void computeDistTo(int[] distTo, ArrayList<ArrayList<Boolean>> apartmentList, int factor){
+        for (int i = 0; i < distTo.length; i++) {
+            if (apartmentList.get(i).get(factor)) {
+                distTo[i] = 0;
+            } else {
+                for (int j = i - 1; j >= 0; j--) {
+                    if (apartmentList.get(j).get(factor)) {
+                        distTo[i] = i - j;
+                        break;
+                    }
+                }
+            }
+            for (int j = i - 1; j >= 0; j--) {
+                if (i - j < distTo[j]) {
+                    distTo[j] = i - j;
+                }else {
+                    break;
+                }
+            }
+        }
+    }
+
+    static int sumBitDifferences(int arr[], int n)
+    {
+
+        int ans = 0; // Initialize result
+
+        // traverse over all bits
+        for (int i = 0; i < 32; i++) {
+
+            // count number of elements
+            // with i'th bit set
+            int count = 0;
+
+            for (int j = 0; j < n; j++)
+                if ((arr[j] & (1 << i)) != 0)
+                    count++;
+
+            // Add "count * (n - count) * 2"
+            // to the answer...(n - count = unset bit count)
+            ans += (count * (n - count) * 2);
+        }
+
+        return ans;
+    }
+
+    static class Graph{
+        LinkedList<Integer>[] edges;
+
+        Graph(int verticeCount){
+            edges = new LinkedList[verticeCount];
+            for (int i=0;i<verticeCount;i++){
+                edges[i]= new LinkedList<>();
+            }
+        }
+
+        void addEdge(int u, int v){
+            addDirectedEdge(u, v);
+            addDirectedEdge(v, u);
+        }
+
+        void addDirectedEdge(int u, int v){
+            edges[u].add(v);
+        }
+    }
+
+    static class WeightedGraph{
+        HashMap<Integer, Node> nodes=new HashMap<>();
+
+        void addEdge(int u, int v){
+            addDirectedEdge(u, v);
+            addDirectedEdge(v, u);
+        }
+
+        void addDirectedEdge(int u, int v){
+            Edge edge = new Edge(u, v);
+            nodes.computeIfAbsent(u, Node::new)
+                    .edges.add(edge);
+        }
+    }
+
+    static class Edge{
+        int weight;
+        int nodeFromLabel;
+        int nodeToLabel;
+        Edge(int u, int v){
+            nodeFromLabel=u;
+            nodeToLabel=v;
+        }
+    }
+
+    static class Node{
+        int nodeLabel;
+        List<Edge> edges;
+        Node(int label){
+            nodeLabel=label;
+        }
+    }
+}
